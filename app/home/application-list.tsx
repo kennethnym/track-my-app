@@ -163,8 +163,13 @@ const AddStageActions = memo(() => {
 	const addStageToEntry = useStore((state) => state.addStageInEntry)
 
 	function onOk() {
-		const stage = useListItemStore.getState().newStageValue
+		let stage = useListItemStore.getState().newStageValue
 		if (stage) {
+			if (stage === DEFAULT_NODE.acceptedNode.key.toLowerCase()) {
+				stage = DEFAULT_NODE.acceptedNode.key
+			} else if (stage === DEFAULT_NODE.rejectedNode.key.toLowerCase()) {
+				stage = DEFAULT_NODE.rejectedNode.key
+			}
 			addStageToEntry(stage, entry.name)
 			setIsAddingStage(false)
 			setNewStageValue("")

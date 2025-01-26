@@ -1,17 +1,37 @@
-interface Node {
-	key: string
-	outs: Record<string, Connection>
-}
+import {
+	type Infer,
+	array,
+	integer,
+	min,
+	object,
+	record,
+	string,
+} from "superstruct"
 
-interface Entry {
-	name: string
-	stages: Node["key"][]
-}
+const $Connection = object({
+	nodeKey: string(),
+	weight: min(integer(), 0),
+})
+type Connection = Infer<typeof $Connection>
 
-interface Connection {
-	nodeKey: Node["key"]
-	weight: number
-}
+const $Node = object({
+	key: string(),
+	outs: record(string(), $Connection),
+})
+type Node = Infer<typeof $Node>
+
+const $Entry = object({
+	name: string(),
+	stages: array(string()),
+})
+type Entry = Infer<typeof $Entry>
+
+const $Graph = object({
+	nodes: record(string(), $Node),
+	starts: array(string()),
+	entries: record(string(), $Entry),
+})
+type Graph = Infer<typeof $Graph>
 
 const DEFAULT_NODE = {
 	applicationSubmittedNode: {
@@ -28,5 +48,5 @@ const DEFAULT_NODE = {
 	},
 } as const
 
-export { DEFAULT_NODE }
-export type { Node, Entry, Connection }
+export { $Graph, DEFAULT_NODE }
+export type { Graph, Node, Entry, Connection }

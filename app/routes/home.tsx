@@ -16,6 +16,25 @@ export function meta() {
 }
 
 export default function Home() {
+	const loadGraphFromLocalStorage = useRootStore(
+		(state) => state.loadGraphFromLocalStorage,
+	)
+
+	useEffect(function saveGraphToLocalStorage() {
+		const unsub = useRootStore.subscribe(({ nodes, starts, entries }) => {
+			localStorage.setItem("graph", JSON.stringify({ nodes, starts, entries }))
+		})
+		return () => {
+			unsub()
+		}
+	}, [])
+
+	useEffect(() => {
+		if (!loadGraphFromLocalStorage()) {
+			alert("Unable to load locally saved data due to inconsistency.")
+		}
+	}, [loadGraphFromLocalStorage])
+
 	return (
 		<div className="flex items-center justify-center p-4 md:px-16 md:pt-20 w-full">
 			<main className="w-full max-w-xl flex flex-col items-start">
@@ -37,26 +56,34 @@ export default function Home() {
 function FlufferChart() {
 	const nodes = useRootStore((state) => state.nodes)
 	const starts = useRootStore((state) => state.starts)
+	const resetGraph = useRootStore((state) => state.resetGraph)
 	const uiMode = useUiMode()
 
 	const data = useMemo(() => {
-		const rows: [string, string, number][] = []
-		const queue = new Queue<Node>()
-		for (const nodeKey of starts) {
-			queue.enqueue(nodes[nodeKey])
-		}
-		while (!queue.isEmpty) {
-			// biome-ignore lint/style/noNonNullAssertion: if queue is non empty, then dequeue will always be non null
-			const currentNode = queue.dequeue()!
-			for (const nodeKey in currentNode.outs) {
-				// biome-ignore lint/style/noNonNullAssertion: <explanation>
-				const connection = currentNode.outs[nodeKey]!
-				rows.push([currentNode.key, connection.nodeKey, connection.weight])
-				queue.enqueue(nodes[connection.nodeKey])
+		try {
+			const rows: [string, string, number][] = []
+			const queue = new Queue<Node>()
+			for (const nodeKey of starts) {
+				queue.enqueue(nodes[nodeKey])
 			}
+			while (!queue.isEmpty) {
+				// biome-ignore lint/style/noNonNullAssertion: if queue is non empty, then dequeue will always be non null
+				const currentNode = queue.dequeue()!
+				for (const nodeKey in currentNode.outs) {
+					// biome-ignore lint/style/noNonNullAssertion: <explanation>
+					const connection = currentNode.outs[nodeKey]!
+					rows.push([currentNode.key, connection.nodeKey, connection.weight])
+					queue.enqueue(nodes[connection.nodeKey])
+				}
+			}
+			return rows
+		} catch {
+			if (confirm("Invalid data detected. Erase data and reset?")) {
+				resetGraph()
+			}
+			return []
 		}
-		return rows
-	}, [starts, nodes])
+	}, [starts, nodes, resetGraph])
 
 	const hasData = data.length > 0
 

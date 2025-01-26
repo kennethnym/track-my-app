@@ -109,14 +109,6 @@ function StageItemActions({ stage }: { stage: string }) {
 					deleteStageInEntry(stage, entry.name)
 				}}
 			>
-				Edit
-			</Button>
-			<Button
-				variant="small"
-				onClick={() => {
-					deleteStageInEntry(stage, entry.name)
-				}}
-			>
 				Delete
 			</Button>
 		</div>

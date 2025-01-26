@@ -1,12 +1,15 @@
+import { is } from "superstruct"
 import { create } from "zustand/index"
 import { immer } from "zustand/middleware/immer"
-import { DEFAULT_NODE, type Entry, type Node } from "~/home/graph"
+import { $Graph, DEFAULT_NODE, type Entry, type Node } from "~/home/graph"
 
 interface RootStore {
 	nodes: Record<string, Node>
 	starts: Node["key"][]
 	entries: Record<string, Entry>
 
+	loadGraphFromLocalStorage: () => boolean
+	resetGraph: () => void
 	addEntry: (name: string) => void
 	hasEntry: (name: string) => boolean
 	addStageInEntry: (stage: string, entryName: string) => void
@@ -24,6 +27,38 @@ const useRootStore = create<RootStore>()(
 		},
 		starts: [DEFAULT_NODE.applicationSubmittedNode.key],
 		entries: {},
+
+		loadGraphFromLocalStorage: () => {
+			const graphJson = localStorage.getItem("graph")
+			if (!graphJson) {
+				// if there is no saved data, then we simply return
+				// this is not considered to be an error
+				return true
+			}
+
+			const graph = JSON.parse(graphJson)
+			if (!is(graph, $Graph)) {
+				return false
+			}
+
+			set({
+				nodes: graph.nodes,
+				starts: graph.starts,
+				entries: graph.entries,
+			})
+
+			return true
+		},
+
+		resetGraph: () =>
+			set({
+				nodes: {
+					[DEFAULT_NODE.applicationSubmittedNode.key]:
+						DEFAULT_NODE.applicationSubmittedNode,
+				},
+				starts: [DEFAULT_NODE.applicationSubmittedNode.key],
+				entries: {},
+			}),
 
 		addEntry: (name) =>
 			set((state) => {

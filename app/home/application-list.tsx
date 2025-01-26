@@ -53,10 +53,11 @@ const StageItem = memo(({ step }: { step: string }) => {
 				{step}
 				{step !== DEFAULT_NODE.applicationSubmittedNode.key ? (
 					<Button
+						variant="small"
 						onClick={() => {
 							deleteStageInEntry(step, entry.name)
 						}}
-						className="text-xs py-0 invisible group-hover:visible"
+						className="invisible group-hover:visible"
 					>
 						Delete
 					</Button>
@@ -126,28 +127,29 @@ const DefaultActions = memo(() => {
 	return (
 		<div className="flex flex-row flex-wrap gap-2 pl-4 mt-2">
 			<Button
+				variant="small"
+				disabled={isApplicationFinalized}
 				onClick={() => {
 					setIsAddingStage(true)
 				}}
-				className="text-xs py-0"
 			>
 				New stage
 			</Button>
 			<Button
+				variant="small"
 				disabled={isApplicationFinalized}
-				className="text-xs py-0"
 				onClick={onAccepted}
 			>
 				Accepted
 			</Button>
 			<Button
+				variant="small"
 				disabled={isApplicationFinalized}
-				className="text-xs py-0"
 				onClick={onRejected}
 			>
 				Rejected
 			</Button>
-			<Button onClick={onDeleteApplication} className="text-xs py-0">
+			<Button variant="small" onClick={onDeleteApplication}>
 				Delete application
 			</Button>
 		</div>
@@ -175,10 +177,10 @@ const AddStageActions = memo(() => {
 
 	return (
 		<div className="flex flex-row space-x-2 pl-4 mt-2">
-			<Button onClick={onOk} className="text-xs py-0">
+			<Button variant="small" onClick={onOk}>
 				Ok
 			</Button>
-			<Button onClick={onCancel} className="text-xs py-0">
+			<Button variant="small" onClick={onCancel}>
 				Cancel
 			</Button>
 		</div>

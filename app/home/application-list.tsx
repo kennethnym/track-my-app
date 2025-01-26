@@ -102,12 +102,25 @@ function ApplicationActions() {
 const DefaultActions = memo(() => {
 	const entry = useContext(EntryContext)
 	const setIsAddingStage = useListItemStore((state) => state.setIsAddingStage)
+	const addStageToEntry = useStore((state) => state.addStageInEntry)
 	const deleteEntry = useStore((state) => state.deleteEntry)
+
+	const isApplicationFinalized =
+		entry.stages.at(-1) === DEFAULT_NODE.acceptedNode.key ||
+		entry.stages.at(-1) === DEFAULT_NODE.rejectedNode.key
 
 	function onDeleteApplication() {
 		if (confirm("Are you sure you want to delete this application?")) {
 			deleteEntry(entry.name)
 		}
+	}
+
+	function onAccepted() {
+		addStageToEntry(DEFAULT_NODE.acceptedNode.key, entry.name)
+	}
+
+	function onRejected() {
+		addStageToEntry(DEFAULT_NODE.rejectedNode.key, entry.name)
 	}
 
 	return (
@@ -120,8 +133,20 @@ const DefaultActions = memo(() => {
 			>
 				New stage
 			</Button>
-			<Button className="text-xs py-0">Accepted</Button>
-			<Button className="text-xs py-0">Rejected</Button>
+			<Button
+				disabled={isApplicationFinalized}
+				className="text-xs py-0"
+				onClick={onAccepted}
+			>
+				Accepted
+			</Button>
+			<Button
+				disabled={isApplicationFinalized}
+				className="text-xs py-0"
+				onClick={onRejected}
+			>
+				Rejected
+			</Button>
 			<Button onClick={onDeleteApplication} className="text-xs py-0">
 				Delete application
 			</Button>

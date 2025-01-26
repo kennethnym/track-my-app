@@ -53,7 +53,11 @@ const useStore = create<Store>()(
 					}
 
 					const lastStageNodeKey = entry.stages.at(-1) ?? state.starts[0]
-					if (lastStageNodeKey === stage) {
+					if (
+						lastStageNodeKey === stage ||
+						lastStageNodeKey === DEFAULT_NODE.acceptedNode.key ||
+						lastStageNodeKey === DEFAULT_NODE.rejectedNode.key
+					) {
 						return
 					}
 

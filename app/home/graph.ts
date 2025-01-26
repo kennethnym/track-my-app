@@ -18,6 +18,14 @@ const DEFAULT_NODE = {
 		key: "Application submitted",
 		outs: {},
 	},
+	acceptedNode: {
+		key: "Accepted",
+		outs: {},
+	},
+	rejectedNode: {
+		key: "Rejected",
+		outs: {},
+	},
 } as const
 
 export { DEFAULT_NODE }

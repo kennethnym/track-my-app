@@ -2,7 +2,7 @@ import { create } from "zustand/index"
 import { immer } from "zustand/middleware/immer"
 import { DEFAULT_NODE, type Entry, type Node } from "~/home/graph"
 
-interface Store {
+interface RootStore {
 	nodes: Record<string, Node>
 	starts: Node["key"][]
 	entries: Record<string, Entry>
@@ -10,11 +10,12 @@ interface Store {
 	addEntry: (name: string) => void
 	hasEntry: (name: string) => boolean
 	addStageInEntry: (stage: string, entryName: string) => void
+	editStageInEntry: (i: number, stage: string, entryName: string) => void
 	deleteStageInEntry: (stage: string, entryName: string) => void
 	deleteEntry: (entryName: string) => void
 }
 
-const useStore = create<Store>()(
+const useRootStore = create<RootStore>()(
 	immer((set, get) => ({
 		isAddingEntry: false,
 		nodes: {
@@ -72,6 +73,17 @@ const useStore = create<Store>()(
 				}
 			}),
 
+		editStageInEntry: (i, stage, entryName) =>
+			set((state) => {
+				const entry = state.entries[entryName]
+				if (entry && stage) {
+					if (i >= entry.stages.length) {
+						return
+					}
+					entry.stages[i] = stage
+				}
+			}),
+
 		deleteStageInEntry: (stage, entryName) =>
 			set((state) => {
 				if (stage === DEFAULT_NODE.applicationSubmittedNode.key) {
@@ -119,4 +131,4 @@ const useStore = create<Store>()(
 	})),
 )
 
-export { useStore }
+export { useRootStore }

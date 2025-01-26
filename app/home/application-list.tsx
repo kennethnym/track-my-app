@@ -6,20 +6,20 @@ import {
 	useEffect,
 	useRef,
 } from "react"
-import { create } from "zustand"
+import { createStore, useStore } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { Button } from "~/components/button"
 import { DEFAULT_NODE, type Entry } from "~/home/graph"
-import { useStore } from "./store"
+import { useRootStore } from "./store"
 
 function ApplicationList() {
-	const entries = useStore(useShallow((state) => state.entries))
+	const entries = useRootStore(useShallow((state) => state.entries))
 	return Object.values(entries).map((entry) => (
 		<ApplicationListItem key={entry.name} entry={entry} />
 	))
 }
 
-interface ListItemStore {
+interface ListItemState {
 	isAddingStage: boolean
 	newStageValue: string
 
@@ -28,66 +28,100 @@ interface ListItemStore {
 	addStage: (entryName: string) => void
 }
 
-const useListItemStore = create<ListItemStore>()((set, get) => ({
-	isAddingStage: false,
-	newStageValue: "",
+function createListItemStore() {
+	return createStore<ListItemState>()((set, get) => ({
+		isAddingStage: false,
+		newStageValue: "",
 
-	setNewStageValue: (newStageValue: string) => set({ newStageValue }),
-	setIsAddingStage: (isAddingStage: boolean) => set({ isAddingStage }),
-	addStage: (entryName) => {
-		const store = useStore.getState()
-		let stage = get().newStageValue
-		if (stage) {
-			if (stage === DEFAULT_NODE.acceptedNode.key.toLowerCase()) {
-				stage = DEFAULT_NODE.acceptedNode.key
-			} else if (stage === DEFAULT_NODE.rejectedNode.key.toLowerCase()) {
-				stage = DEFAULT_NODE.rejectedNode.key
+		setNewStageValue: (newStageValue: string) => set({ newStageValue }),
+		setIsAddingStage: (isAddingStage: boolean) => set({ isAddingStage }),
+		addStage: (entryName) => {
+			const store = useRootStore.getState()
+			let stage = get().newStageValue
+			if (stage) {
+				if (stage === DEFAULT_NODE.acceptedNode.key.toLowerCase()) {
+					stage = DEFAULT_NODE.acceptedNode.key
+				} else if (stage === DEFAULT_NODE.rejectedNode.key.toLowerCase()) {
+					stage = DEFAULT_NODE.rejectedNode.key
+				}
+				store.addStageInEntry(stage, entryName)
+				set({ isAddingStage: false, newStageValue: "" })
 			}
-			store.addStageInEntry(stage, entryName)
-			set({ isAddingStage: false, newStageValue: "" })
-		}
-	},
-}))
+		},
+	}))
+}
+type ListItemStore = ReturnType<typeof createListItemStore>
+
+const ListItemStoreContext = createContext<ListItemStore>(
+	null as unknown as ListItemStore,
+)
+
+function useListItemStore<T>(selector: (state: ListItemState) => T): T {
+	const store = useContext(ListItemStoreContext)
+	return useStore(store, selector)
+}
 
 const EntryContext = createContext<Entry>(null as unknown as Entry)
 
-const ApplicationListItem = memo(({ entry }: { entry: Entry }) => (
-	<EntryContext value={entry}>
-		<details className="w-full px-2 pb-2 -mx-2">
-			<summary className="cursor-pointer">{entry.name}</summary>
-			<ol className="pl-3 list-decimal list-inside text-sm">
-				{entry.stages.map((step) => (
-					<StageItem key={step} step={step} />
-				))}
-				<NewStageInput />
-			</ol>
-			<ApplicationActions />
-		</details>
-	</EntryContext>
-))
-
-const StageItem = memo(({ step }: { step: string }) => {
-	const entry = useContext(EntryContext)
-	const deleteStageInEntry = useStore((state) => state.deleteStageInEntry)
+const ApplicationListItem = memo(({ entry }: { entry: Entry }) => {
+	const store = useRef<ListItemStore | null>(null)
+	if (!store.current) {
+		store.current = createListItemStore()
+	}
 	return (
-		<li key={step} className="w-full group justify-between px-1">
-			<div className="w-[90%] inline-flex flex-row items-center justify-between">
-				{step}
-				{step !== DEFAULT_NODE.applicationSubmittedNode.key ? (
-					<Button
-						variant="small"
-						onClick={() => {
-							deleteStageInEntry(step, entry.name)
-						}}
-						className="invisible group-hover:visible"
-					>
-						Delete
-					</Button>
-				) : null}
-			</div>
-		</li>
+		<ListItemStoreContext value={store.current}>
+			<EntryContext value={entry}>
+				<details className="w-full px-2 pb-2 -mx-2">
+					<summary className="cursor-pointer">{entry.name}</summary>
+					<ol className="pl-3 list-decimal list-inside text-sm">
+						{entry.stages.map((step) => (
+							<StageItem key={step} stage={step} />
+						))}
+						<NewStageInput />
+					</ol>
+					<ApplicationActions />
+				</details>
+			</EntryContext>
+		</ListItemStoreContext>
 	)
 })
+
+const StageItem = memo(({ stage }: { stage: string }) => (
+	<li key={stage} className="w-full group justify-between px-1">
+		<div className="w-[90%] inline-flex flex-row flex-wrap items-center justify-between">
+			{stage}
+			{stage !== DEFAULT_NODE.applicationSubmittedNode.key ? (
+				<StageItemActions stage={stage} />
+			) : null}
+		</div>
+	</li>
+))
+
+function StageItemActions({ stage }: { stage: string }) {
+	const entry = useContext(EntryContext)
+	const deleteStageInEntry = useRootStore((state) => state.deleteStageInEntry)
+
+	return (
+		<div className="flex flex-row space-x-2 invisible group-hover:visible">
+			<Button
+				variant="small"
+				onClick={() => {
+					deleteStageInEntry(stage, entry.name)
+				}}
+			>
+				Edit
+			</Button>
+			<Button
+				variant="small"
+				onClick={() => {
+					deleteStageInEntry(stage, entry.name)
+				}}
+			>
+				Delete
+			</Button>
+		</div>
+	)
+}
 
 function NewStageInput() {
 	const isAddingStage = useListItemStore((state) => state.isAddingStage)
@@ -142,8 +176,8 @@ function ApplicationActions() {
 const DefaultActions = memo(() => {
 	const entry = useContext(EntryContext)
 	const setIsAddingStage = useListItemStore((state) => state.setIsAddingStage)
-	const addStageToEntry = useStore((state) => state.addStageInEntry)
-	const deleteEntry = useStore((state) => state.deleteEntry)
+	const addStageToEntry = useRootStore((state) => state.addStageInEntry)
+	const deleteEntry = useRootStore((state) => state.deleteEntry)
 
 	const isApplicationFinalized =
 		entry.stages.at(-1) === DEFAULT_NODE.acceptedNode.key ||

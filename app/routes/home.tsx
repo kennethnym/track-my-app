@@ -4,7 +4,7 @@ import Chart from "react-google-charts"
 import { Button } from "~/components/button"
 import { ApplicationList } from "~/home/application-list"
 import type { Node } from "~/home/graph"
-import { useStore } from "~/home/store"
+import { useRootStore } from "~/home/store"
 import { Queue } from "~/queue"
 import { useUiMode } from "~/use-ui-mode"
 
@@ -35,8 +35,8 @@ export default function Home() {
 }
 
 function FlufferChart() {
-	const nodes = useStore((state) => state.nodes)
-	const starts = useStore((state) => state.starts)
+	const nodes = useRootStore((state) => state.nodes)
+	const starts = useRootStore((state) => state.starts)
 	const uiMode = useUiMode()
 
 	const data = useMemo(() => {
@@ -86,8 +86,8 @@ function FlufferChart() {
 
 function AddApplicationForm() {
 	const [isAddingEntry, setIsAddingEntry] = useState(false)
-	const addEntry = useStore((state) => state.addEntry)
-	const hasEntry = useStore((state) => state.hasEntry)
+	const addEntry = useRootStore((state) => state.addEntry)
+	const hasEntry = useRootStore((state) => state.hasEntry)
 	const inputRef = useRef<HTMLInputElement | null>(null)
 
 	useEffect(() => {

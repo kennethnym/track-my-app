@@ -18,13 +18,28 @@ interface ListItemStore {
 
 	setNewStageValue: (newStageValue: string) => void
 	setIsAddingStage: (isAddingStage: boolean) => void
+	addStage: (entryName: string) => void
 }
 
-const useListItemStore = create<ListItemStore>()((set) => ({
+const useListItemStore = create<ListItemStore>()((set, get) => ({
 	isAddingStage: false,
 	newStageValue: "",
+
 	setNewStageValue: (newStageValue: string) => set({ newStageValue }),
 	setIsAddingStage: (isAddingStage: boolean) => set({ isAddingStage }),
+	addStage: (entryName) => {
+		const store = useStore.getState()
+		let stage = get().newStageValue
+		if (stage) {
+			if (stage === DEFAULT_NODE.acceptedNode.key.toLowerCase()) {
+				stage = DEFAULT_NODE.acceptedNode.key
+			} else if (stage === DEFAULT_NODE.rejectedNode.key.toLowerCase()) {
+				stage = DEFAULT_NODE.rejectedNode.key
+			}
+			store.addStageInEntry(stage, entryName)
+			set({ isAddingStage: false, newStageValue: "" })
+		}
+	},
 }))
 
 const EntryContext = createContext<Entry>(null as unknown as Entry)
@@ -79,13 +94,21 @@ function NewStageInput() {
 	return null
 }
 function ActualStageInput() {
+	const entry = useContext(EntryContext)
 	const newStageValue = useListItemStore((state) => state.newStageValue)
 	const setNewStageValue = useListItemStore((state) => state.setNewStageValue)
+	const addStage = useListItemStore((state) => state.addStage)
+
 	return (
 		<input
 			value={newStageValue}
 			onChange={(event) => {
 				setNewStageValue(event.currentTarget.value)
+			}}
+			onKeyDown={(event) => {
+				if (event.key === "Enter") {
+					addStage(entry.name)
+				}
 			}}
 			className="bg-transparent"
 		/>
@@ -159,21 +182,10 @@ const DefaultActions = memo(() => {
 const AddStageActions = memo(() => {
 	const entry = useContext(EntryContext)
 	const setIsAddingStage = useListItemStore((state) => state.setIsAddingStage)
-	const setNewStageValue = useListItemStore((state) => state.setNewStageValue)
-	const addStageToEntry = useStore((state) => state.addStageInEntry)
+	const addStage = useListItemStore((state) => state.addStage)
 
 	function onOk() {
-		let stage = useListItemStore.getState().newStageValue
-		if (stage) {
-			if (stage === DEFAULT_NODE.acceptedNode.key.toLowerCase()) {
-				stage = DEFAULT_NODE.acceptedNode.key
-			} else if (stage === DEFAULT_NODE.rejectedNode.key.toLowerCase()) {
-				stage = DEFAULT_NODE.rejectedNode.key
-			}
-			addStageToEntry(stage, entry.name)
-			setIsAddingStage(false)
-			setNewStageValue("")
-		}
+		addStage(entry.name)
 	}
 
 	function onCancel() {

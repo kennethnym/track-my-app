@@ -116,6 +116,11 @@ function AddApplicationForm() {
 					className="px-2"
 					type="text"
 					placeholder="Application name"
+					onKeyDown={(event) => {
+						if (event.key === "Enter") {
+							onAddButtonClick()
+						}
+					}}
 				/>
 			) : null}
 			<div className="flex flex-row space-x-2 mt-2">

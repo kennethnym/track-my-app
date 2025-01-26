@@ -1,5 +1,5 @@
 import clsx from "clsx"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Chart from "react-google-charts"
 import { Button } from "~/components/button"
 import { ApplicationList } from "~/home/application-list"
@@ -89,6 +89,12 @@ function AddApplicationForm() {
 	const addEntry = useStore((state) => state.addEntry)
 	const hasEntry = useStore((state) => state.hasEntry)
 	const inputRef = useRef<HTMLInputElement | null>(null)
+
+	useEffect(() => {
+		if (isAddingEntry) {
+			inputRef.current?.focus()
+		}
+	}, [isAddingEntry])
 
 	function onAddButtonClick() {
 		if (!isAddingEntry) {

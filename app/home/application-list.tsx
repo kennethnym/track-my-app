@@ -1,4 +1,11 @@
-import { createContext, memo, useContext } from "react"
+import {
+	type Ref,
+	createContext,
+	memo,
+	useContext,
+	useEffect,
+	useRef,
+} from "react"
 import { create } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 import { Button } from "~/components/button"
@@ -84,16 +91,24 @@ const StageItem = memo(({ step }: { step: string }) => {
 
 function NewStageInput() {
 	const isAddingStage = useListItemStore((state) => state.isAddingStage)
+	const inputRef = useRef<HTMLInputElement | null>(null)
+
+	useEffect(() => {
+		if (isAddingStage) {
+			inputRef.current?.focus()
+		}
+	}, [isAddingStage])
+
 	if (isAddingStage) {
 		return (
 			<li className="px-1">
-				<ActualStageInput />
+				<ActualStageInput ref={inputRef} />
 			</li>
 		)
 	}
 	return null
 }
-function ActualStageInput() {
+function ActualStageInput({ ref }: { ref: Ref<HTMLInputElement> }) {
 	const entry = useContext(EntryContext)
 	const newStageValue = useListItemStore((state) => state.newStageValue)
 	const setNewStageValue = useListItemStore((state) => state.setNewStageValue)
@@ -101,6 +116,7 @@ function ActualStageInput() {
 
 	return (
 		<input
+			ref={ref}
 			value={newStageValue}
 			onChange={(event) => {
 				setNewStageValue(event.currentTarget.value)

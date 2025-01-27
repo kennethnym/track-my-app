@@ -98,6 +98,7 @@ const useRootStore = create<RootStore>()(
 					const lastStageNodeKey = entry.stages.at(-1) ?? state.starts[0]
 					if (
 						lastStageNodeKey === stage ||
+						// cannot add stage after accepted/rejected
 						lastStageNodeKey === DEFAULT_NODE.acceptedNode.key ||
 						lastStageNodeKey === DEFAULT_NODE.rejectedNode.key
 					) {
@@ -105,12 +106,10 @@ const useRootStore = create<RootStore>()(
 					}
 
 					const lastStageNode = state.nodes[lastStageNodeKey]
-					const conn = lastStageNode.outs[node.key]
-					if (conn) {
-						conn.weight++
-					} else {
-						lastStageNode.outs[node.key] = { nodeKey: node.key, weight: 1 }
+					if (lastStageNode) {
+						connectNode(lastStageNode, node)
 					}
+
 					entry.stages.push(node.key)
 				}
 			}),

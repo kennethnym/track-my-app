@@ -1,10 +1,11 @@
 import {
-	isRouteErrorResponse,
+	Link,
 	Links,
 	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	isRouteErrorResponse,
 } from "react-router"
 
 import type { Route } from "./+types/root"
@@ -37,6 +38,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
 				{children}
 				<ScrollRestoration />
 				<Scripts />
+
+				<footer className="w-full opacity-50 flex items-center justify-center px-4 py-8 text-xs">
+					<div className="w-full max-w-xl">
+						<p>
+							Made by{" "}
+							<Link
+								className="underline"
+								prefetch="intent"
+								to="https://kennethnym.com"
+							>
+								kennethnym
+							</Link>
+							<span className="mx-1">&middot;</span>
+							<Link
+								className="underline"
+								prefetch="intent"
+								to="https://github.com/kennethnym/track-my-app"
+							>
+								GitHub
+							</Link>
+						</p>
+					</div>
+				</footer>
 			</body>
 		</html>
 	)

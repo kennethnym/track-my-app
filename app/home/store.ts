@@ -1,7 +1,14 @@
 import { is } from "superstruct"
 import { create } from "zustand/index"
 import { immer } from "zustand/middleware/immer"
-import { $Graph, DEFAULT_NODE, type Entry, type Node } from "~/home/graph"
+import {
+	$Graph,
+	DEFAULT_NODE,
+	type Entry,
+	type Node,
+	connectNode,
+	disconnectNode,
+} from "~/home/graph"
 
 interface RootStore {
 	nodes: Record<string, Node>
@@ -128,20 +135,33 @@ const useRootStore = create<RootStore>()(
 				const entry = state.entries[entryName]
 				const node = state.nodes[stage]
 				if (entry && node) {
-					const lastStageNodeKey = entry.stages.at(-2)
-					if (!lastStageNodeKey) {
+					const i = entry.stages.indexOf(stage)
+					if (i < 0) {
 						return
 					}
 
-					const lastStageNode = state.nodes[lastStageNodeKey]
-					const conn = lastStageNode.outs[node.key]
-					if (conn) {
-						if (conn.weight === 1) {
-							delete lastStageNode.outs[node.key]
-						} else {
-							conn.weight--
+					const lastStageNodeKey = entry.stages.at(i - 1)
+					let lastStageNode: Node | null = null
+					if (lastStageNodeKey) {
+						lastStageNode = state.nodes[lastStageNodeKey]
+						if (lastStageNode) {
+							disconnectNode(lastStageNode, node)
 						}
 					}
+
+					const nextStageNodeKey = entry.stages.at(i + 1)
+					let nextStageNode: Node | null = null
+					if (nextStageNodeKey) {
+						nextStageNode = state.nodes[nextStageNodeKey]
+						if (nextStageNode) {
+							disconnectNode(node, nextStageNode)
+						}
+					}
+
+					if (lastStageNode && nextStageNode) {
+						connectNode(lastStageNode, nextStageNode)
+					}
+
 					entry.stages = entry.stages.filter((step) => step !== stage)
 				}
 			}),
@@ -152,14 +172,7 @@ const useRootStore = create<RootStore>()(
 				for (let i = 1; i < entry.stages.length; ++i) {
 					const lastStageNode = state.nodes[entry.stages[i - 1]]
 					const node = state.nodes[entry.stages[i]]
-					const conn = lastStageNode.outs[node.key]
-					if (conn) {
-						if (conn.weight === 1) {
-							delete lastStageNode.outs[node.key]
-						} else {
-							conn.weight--
-						}
-					}
+					disconnectNode(lastStageNode, node)
 				}
 				delete state.entries[entryName]
 			}),

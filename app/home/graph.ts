@@ -48,5 +48,28 @@ const DEFAULT_NODE = {
 	},
 } as const
 
-export { $Graph, DEFAULT_NODE }
+function disconnectNode(srcNode: Node, removeNode: Node) {
+	const conn = srcNode.outs[removeNode.key]
+	if (conn) {
+		if (conn.weight === 1) {
+			delete srcNode.outs[removeNode.key]
+		} else {
+			conn.weight--
+		}
+	}
+}
+
+function connectNode(srcNode: Node, node: Node) {
+	const conn = srcNode.outs[node.key]
+	if (conn) {
+		conn.weight++
+	} else {
+		srcNode.outs[node.key] = {
+			nodeKey: node.key,
+			weight: 1,
+		}
+	}
+}
+
+export { $Graph, DEFAULT_NODE, connectNode, disconnectNode }
 export type { Graph, Node, Entry, Connection }

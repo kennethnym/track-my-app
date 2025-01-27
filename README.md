@@ -1,100 +1,27 @@
-# Welcome to React Router!
+# TrackMyApp
 
-A modern, production-ready template for building full-stack React applications using React Router.
+![TrackMyApp dashboard](./screenshots/main-screenshot.png)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+[TrackMyApp](https://trackmyapp.info) is a simple web app I made to track and visualize concurrent (job) applications.
 
-## Features
+## Prerequisites
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- Node.js v22
 
-## Getting Started
+## Running Locally
 
-### Installation
+1. `npm install`
+2. `npm run dev`
 
-Install the dependencies:
+## Building and Deploying
 
-```bash
-npm install
-```
+1. `npm run build`
+2. `npm start`
 
-### Development
+TrackMyApp should now be running on localhost:3000.
+Put a reverse proxy like nginx in front, and you are good to go.
 
-Start the development server with HMR:
+### Deploying to Fly
 
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
-```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+The public instance is deployed on [https://fly.io].
+Using the `fly.toml` provided, You should be able to run `fly deploy` on your machine and deploy it to your Fly account, provided that you are logged in.

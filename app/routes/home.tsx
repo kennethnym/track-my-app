@@ -11,7 +11,10 @@ import { useUiMode } from "~/use-ui-mode"
 export function meta() {
 	return [
 		{ title: "TrackMyApp" },
-		{ name: "description", content: "Track and visualize your applications" },
+		{
+			name: "description",
+			content: "Track and visualize your job applications and more.",
+		},
 	]
 }
 
